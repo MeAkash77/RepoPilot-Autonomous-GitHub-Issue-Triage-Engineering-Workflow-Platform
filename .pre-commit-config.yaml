@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.17
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run mypy apps/api/src apps/worker/src packages/core/src packages/github/src packages/llm/src packages/retrieval/src packages/agent/src evals/src
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: prettier
+        name: prettier (web)
+        entry: bash -c 'cd apps/web && pnpm exec prettier --check "src/**/*.{ts,tsx,css}"'
+        language: system
+        files: ^apps/web/src/
+        pass_filenames: false

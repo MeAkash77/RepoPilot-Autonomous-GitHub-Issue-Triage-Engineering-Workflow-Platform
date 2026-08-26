@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.pnpm-store/
+
+# Playwright
+test-results/
+playwright-report/
+.playwright/
+tests/.auth-state.json
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local tooling
+.claude/
+
+# Build artifacts
+dist/
+build/
+
+# Local data
+*.db
+.langfuse/
+evals/results/
+oracleSSHkeys/
+apps/web/playwright-live-results.json
+apps/web/playwright-report/
+apps/web/tests/.auth-state.json

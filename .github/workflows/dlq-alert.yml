@@ -1,0 +1,25 @@
+name: DLQ Alert
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check dead-letter queue
+        env:
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+          API_URL: https://repopilot-api.fly.dev
+        run: |
+          RESPONSE=$(curl -sf \
+            -H "X-Internal-Key: $INTERNAL_API_KEY" \
+            "$API_URL/api/v1/observability/dead-letter")
+          COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['count'])" 2>/dev/null || echo "0")
+          echo "DLQ failures in last 24h: $COUNT"
+          if [ "$COUNT" -gt "5" ]; then
+            echo "::error::DLQ threshold exceeded: $COUNT failed deliveries in 24h"
+            exit 1
+          fi

@@ -1,0 +1,33 @@
+name: Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "API URL to test"
+        default: "https://repopilot-api.fly.dev"
+        required: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz | tar -xz
+          sudo mv k6-v0.54.0-linux-amd64/k6 /usr/local/bin/k6
+
+      - name: Run load test
+        env:
+          API_URL: ${{ github.event.inputs.api_url || 'https://repopilot-api.fly.dev' }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+        run: |
+          k6 run scripts/load-test.js \
+            -e API_URL="$API_URL" \
+            -e INTERNAL_API_KEY="$INTERNAL_API_KEY" \
+            --summary-trend-stats="p(50),p(95),p(99),max"

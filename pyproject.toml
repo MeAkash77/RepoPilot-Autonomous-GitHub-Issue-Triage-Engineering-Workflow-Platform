@@ -1,0 +1,114 @@
+[project]
+name = "repopilot"
+version = "0.1.0"
+description = "Autonomous AI maintainer agent for GitHub repositories"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "apps/api",
+    "apps/worker",
+    "packages/core",
+    "packages/agent",
+    "packages/retrieval",
+    "packages/github",
+    "packages/llm",
+    "evals",
+    "mcp-server",
+]
+
+[tool.uv.sources]
+repopilot-core = { workspace = true }
+repopilot-agent = { workspace = true }
+repopilot-retrieval = { workspace = true }
+repopilot-github = { workspace = true }
+repopilot-llm = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pre-commit>=4.0.0",
+    "aiosqlite>=0.22.1",
+    "greenlet>=3.5.1",
+    "types-pyyaml>=6.0.12.20260518",
+    "pytest-cov>=6.0.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["apps/*/src", "packages/*/src", "evals/src", "mcp-server/src"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "UP",        # pyupgrade
+    "B",         # bugbear
+    "SIM",       # simplify
+    "TCH",       # type-checking imports
+    "RUF",       # ruff-specific
+    "ASYNC",     # async pitfalls
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "repopilot_core",
+    "repopilot_agent",
+    "repopilot_retrieval",
+    "repopilot_github",
+    "repopilot_llm",
+    "repopilot_api",
+    "repopilot_worker",
+    "repopilot_evals",
+    "repopilot_mcp",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+mypy_path = [
+    "apps/api/src",
+    "apps/worker/src",
+    "packages/core/src",
+    "packages/agent/src",
+    "packages/retrieval/src",
+    "packages/github/src",
+    "packages/llm/src",
+    "evals/src",
+    "mcp-server/src",
+]
+
+[[tool.mypy.overrides]]
+module = ["pgvector.*"]
+follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = ["langfuse.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration: needs a real Postgres (skipped if unreachable)",
+    "e2e: hits live GitHub; opt-in via RUN_E2E=1",
+]
+testpaths = [
+    "apps/api/tests",
+    "apps/worker/tests",
+    "packages/core/tests",
+    "packages/agent/tests",
+    "packages/retrieval/tests",
+    "packages/github/tests",
+    "packages/llm/tests",
+    "evals/tests",
+    "mcp-server/tests",
+]

@@ -1,0 +1,55 @@
+name: Evals
+
+on:
+  pull_request:
+    paths:
+      - "packages/agent/**"
+      - "packages/retrieval/**"
+      - "packages/llm/**"
+      - "evals/**"
+  push:
+    branches: [main]
+    paths:
+      - "packages/agent/**"
+      - "packages/retrieval/**"
+      - "packages/llm/**"
+      - "evals/**"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.3"
+          enable-cache: true
+
+      - name: Sync workspace
+        run: uv sync --all-packages
+
+      # Red-team gate is deterministic and always enforced (100% required).
+      - name: Red-team suite (hard gate)
+        run: uv run python -m repopilot_evals.runner --suite redteam
+
+      # Classification eval runs only when the secret is configured; the
+      # runner compares macro-F1 to the committed baseline and fails on
+      # a >2pt regression.
+      - name: Classification suite
+        if: ${{ vars.RUN_LLM_EVALS == 'true' }}
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: uv run python -m repopilot_evals.runner --suite classification
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/latest.json
+          if-no-files-found: ignore

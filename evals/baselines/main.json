@@ -1,0 +1,8 @@
+{
+  "redteam": {
+    "total": 26,
+    "passed": 26,
+    "pass_rate": 1.0,
+    "failures": []
+  }
+}
